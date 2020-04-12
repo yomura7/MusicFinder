@@ -1,7 +1,5 @@
 package sample
 
-import javax.management.monitor.StringMonitor
-
 data class MySession(val name: String, val value: String)
 
 data class Token(
@@ -37,12 +35,12 @@ data class Me(
  *  GET /v1/browse/new-releases
  */
 data class NewReleases(
-    val albums: PagingObject,
+    val albums: NewReleasesPagingObject,
     val message: String?
 )
-data class PagingObject(
+open class NewReleasesPagingObject(
     val href: String,
-    val items : Array<Albums>,
+    val items: Array<Albums>,
     val limit: Int,
     val next: String,
     val offset: Int,
@@ -53,7 +51,7 @@ data class Albums(
     val album_type: String,
     val artists: Array<Artist>,
     val available_markets: Array<String>,
-    val external_urls: Unit?,
+    val external_urls: ExternalUrls,
     val href: String,
     val id: String,
     val images: Array<ImageObject>,
@@ -65,10 +63,13 @@ data class Albums(
     val uri: String
 )
 data class Artist(
-    val external_urls: Unit?,
+    val external_urls: ExternalUrls,
     val href: String,
     val id: String,
     val name: String,
     val type: String,
     val uri: String
+)
+data class ExternalUrls(
+    val spotify: String
 )

@@ -39,12 +39,12 @@ fun main() {
 
         routing {
             get("/") {
+                val limit = 10
                 val me = callAPI<Me>("/me", accessToken)
-                val newReleases = callAPI<NewReleases>("/browse/new-releases?limit=3", accessToken)
-                val albums = when(newReleases) {
-                    null -> null
-                    else -> newReleases.albums.items.map { it }
-                }
+                val newReleasesInGlobal = callAPI<NewReleases>("/browse/new-releases?limit=$limit", accessToken)
+                val albumsInGlobal = newReleasesInGlobal?.albums?.items?.map { it }
+                val newReleasesInJapan = callAPI<NewReleases>("/browse/new-releases?limit=$limit&country=JP", accessToken)
+                val albumsInJapan = newReleasesInJapan?.albums?.items?.map { it }
                 val status = when (accessToken) {
                     null -> "Not Logged in"
                     else -> "Logged in as ${me?.display_name}"
@@ -70,17 +70,33 @@ fun main() {
                             +"status: $status"
                         }
                         h2 {
-                            +"New Releases"
+                            +"New Releases - Global"
                         }
                         ul {
-                            if (albums == null) {
+                            if (albumsInGlobal == null) {
                                 return@ul
                             }
-                            li {
-                                +"${albums[0].artists.first().name} - ${albums[0].name}"
+                            albumsInGlobal!!.forEach {
+                                li {
+                                    a {
+                                        href = it.external_urls.spotify
+                                        +"${it.artists.first().name} - ${it.name}"
+                                    }
+                                }
                             }
-                            li {
-                                +"${albums[1].artists.first().name} - ${albums[1].name}"
+                        }
+                        h2 {
+                            +"New Releases - Japan"
+                        }
+                        ul {
+                            if (albumsInJapan == null) {
+                                return@ul
+                            }
+                            albumsInJapan!!.forEach {
+                                a {
+                                    href = it.external_urls.spotify
+                                    +"${it.artists.first().name} - ${it.name}"
+                                }
                             }
                         }
                         script(src = "/static/MusicFinder.js") {}
@@ -137,6 +153,7 @@ fun main() {
                 }
                 val json = res.body?.string()
                 val resBody = Gson().fromJson(json, Token::class.java)
+                // TODO
                 accessToken = resBody.access_token
                 call.respondRedirect("/", false)
             }
